@@ -1,0 +1,649 @@
+\documentclass[12pt]{amsart}
+
+\addtolength{\hoffset}{-2.25cm}
+\addtolength{\textwidth}{4.5cm}
+\addtolength{\voffset}{-2.5cm}
+\addtolength{\textheight}{5cm}
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{15pt}
+
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[spanish]{babel}
+\usepackage[colorlinks = true, linkcolor = black, citecolor = black, final]{hyperref}
+\usepackage{array}
+\usepackage{float}
+
+\usepackage{wrapfig}
+
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{ marvosym }
+\usepackage{wasysym}
+\usepackage{tikz}
+
+\usetikzlibrary{patterns}
+
+\newcommand{\ds}{\displaystyle}
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}}
+
+\setlength{\parindent}{0in}
+
+\pagestyle{empty}
+
+\begin{document}
+	\bigskip\bigskip
+	\thispagestyle{empty}
+	
+	\newcommand{\alloc}{\leftarrow}
+	
+	\newcommand{\TipoR}[6]{\begin{table}[H]
+			\begin{tabular}{p{100px}<{\centering}|>{\centering}p{60px}|>{\centering}p{50px}|>{\centering}p{50px}|>{\centering}p{50px}|>{\centering}p{50px}|p{60px}<{\centering}|}
+				\cline{2-7}
+				\vspace{0px}\textbf{Tipo R:}\vspace{7px} & \vspace{0px}#1 & \vspace{0px}#2 & \vspace{0px}#3 & \vspace{0px}#4 & \vspace{0px}#5 & \vspace{0px}#6 \\ \cline{2-7} 
+			\end{tabular}
+	\end{table}}
+
+	\newcommand{\TipoI}[4]{\begin{table}[H]
+			\begin{tabular}{p{100px}<{\centering}|>{\centering}p{60px}|>{\centering}p{50px}|>{\centering}p{50px}|p{180px}<{\centering}|}
+				\cline{2-5}
+				\vspace{0px}\textbf{Tipo I:}\vspace{7px} & \vspace{0px}#1 & \vspace{0px}#2 & \vspace{0px}#3 & \vspace{0px}#4\\ \cline{2-5} 
+			\end{tabular}
+	\end{table}}
+
+	\newcommand{\TipoJ}[2]{\begin{table}[H]
+			\begin{tabular}{p{100px}<{\centering}|>{\centering}p{60px}|p{300px}<{\centering}|}
+				\cline{2-3}
+				\vspace{0px}\textbf{Tipo J:}\vspace{7px} & \vspace{0px}#1 & \vspace{0px}#2 \\ \cline{2-3} 
+			\end{tabular}
+	\end{table}}
+
+	\newcommand{\Efecto}[2]{Efectos de la instrucción:
+		
+		\medskip
+		\begin{itemize}
+			{#1}
+		\end{itemize}
+		\medskip
+		Ensamblador:
+		
+		\medskip
+		\texttt{\qquad\ #2}}
+	
+	\newcommand{\pto}{\item[]}
+	
+	\newcommand{\Rs}{$R_s$}
+	\newcommand{\Rt}{$R_t$}
+	\newcommand{\Rd}{$R_d$}
+	\newcommand{\nop}{$PC \alloc [PC] + 4$}
+	
+	\newcommand{\ReadTime}{\texttt{Read Time}}
+	\newcommand{\RT}{\texttt{RT}}
+	\newcommand{\WriteTime}{\texttt{Write Time}}
+	\newcommand{\WT}{\texttt{WT}}
+	\newcommand{\ADDR}{\texttt{ADDR}}
+	\newcommand{\MASK}{\texttt{MASK}}
+	\newcommand{\ChipSelect}{\texttt{Chip Select}}
+	\newcommand{\CS}{\texttt{CS}}
+	
+	\thispagestyle{empty}
+	\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+	\hspace{1cm}
+	%\center
+	\vspace{1cm}
+	\begin{center}
+	\textsc{\huge Universidad de La Habana}\\[2.0cm]
+	\textsc{\Large Facultad de Matemática y Computación}\\[1.0cm]
+	%\MSonehalfspacing
+	\textsc{\Large Arquitectura de Computadoras 2do CC}\\[1.0cm]
+	
+	\HRule\\[1.4cm]
+	%\MSdoublespacing
+	{ \huge \bfseries Procesador en S-MIPS}\\\vspace{0.2cm}
+	{ \large Proyecto Final}\\\vspace{0.3cm} % Falls nicht benötigt, einfach auskommentieren
+	\HRule
+	\vspace{1cm}
+	%\MSonehalfspacing
+	\begin{figure}[H]
+		\includegraphics[width=0.7\linewidth]{img/microprocesador.jpg}
+	\end{figure}
+
+	\vspace{85px}
+	Curso 2024-2025
+
+	
+
+	\end{center}
+	
+	\vspace{2.9cm}
+	
+	%\flushright \emph{Abgabedatum:} \today
+	
+	\newpage
+
+	\tableofcontents
+	
+	\newpage
+	
+	\section{Introducción}
+	
+	El proyecto consiste en diseñar en \textit{Logisim} un procesador que implemente la arquitectura de juegos de instrucciones S-MIPS (Simplified-MIPS).\\
+	
+	S-MIPS es una arquitectura de $32$~bits. El procesador tiene $32$ registros de propósito general de $32$ bits, nombrados de $R_0$ a $R_{31}$. Por convenio, $R_0$ siempre tiene el valor constante $0$ independientemente de las operaciones que se realicen sobre él y $R_{31}$ (también denominado $SP$) actúa como puntero de la pila (\textit{Stack Pointer}). Cuenta con dos registros adicionales $Hi$ y $Lo$ donde se almacena el resultado de la división y la multiplicación. También se debe disponer de un registro (denominado $PC$) para el \textit{Program Counter}, el cual almacenará la dirección en la memoria de la próxima instrucción a leer de la \textit{RAM}.\\
+	
+	El procesador debe implementarse en el módulo \textit{S-MIPS} del circuito \textit{S-MIPS Board} que se brinda. No se debe modificar el circuito \textit{RAM} ni el circuito \textit{S-MIPS Board}. Durante la evaluación se utilizarán estos circuitos tal y como se entregó. Además queda prohibido utilizar las componentes \textit{RAM} y \textit{ROM} que proporciona \textit{Logisim}.
+	
+	\section{Instrucciones y sus formatos}
+	
+	\subsection{Notas generales}
+	
+	\begin{itemize}
+		\medskip
+		\item $R_s$ , $R_t$ y $R_d$ especifican registros de propósito general.
+		
+		\medskip
+		\item Un elemento entre corchetes ($[\ ]$) indica \textit{``el contenido de''}. Por ejemplo $[R_3] + [R_{22}]$ se refiere a la suma de los valores almacenados en los registros $R_3$ y $R_{22}$.
+		
+		\medskip
+		\item $[PC]$ especifica la dirección de la instrucción en ejecución. Por ejemplo, saltar a la próxima instrucción es $[PC] \alloc [PC] + 4$
+		
+		\medskip
+		\item $I$ se refiere a los bits de la instrucción y el subíndice indica a cuáles de estos bits se refiere. $[I_{15,...,0}]$ se refiere al contenido de los 16 primeros bits de la instrucción, que en el caso de las instrucciones de tipo I es la constante.
+		
+		\medskip
+		\item $||$ indica la concatenación de bits.
+		
+		\medskip
+		\item Los sobre-índices indican la repetición de un valor binario. $0^7$ se refiere a: \texttt{000 0000}$_2$.
+		
+		\medskip
+		\item $M\{I\}$ se refiere a los $32$ bits almacenados en la memoria RAM en la dirección divisible por $4$ más cercana al valor de $I$, es decir, en la dirección $I - I\%4$.
+	\end{itemize}
+
+	Las instrucciones de S-MIPS tienen una longitud constante de 32 bits. Hay 3 formatos de instrucciones	distintos:
+	
+	\TipoR{Op-code}{Rs}{Rt}{Rd}{x}{Func-code}
+	
+	\TipoI{Op-code}{Rs}{Rt}{Constante (complemento a2)}
+	
+	\TipoJ{Op-code}{Destino-salto}
+	
+	Además se considera como el bit menos significativo (o bit $0$) al bit más a la derecha, y como el bit más significativo (o bit $31$) al bit más a la izquierda.
+	
+	\newpage	
+	
+	\section{Instrucciones Aritméticas}
+	
+	\subsection{Addition: \textbf{add}}\ 
+	
+	\TipoR{00 0000}{\Rs}{\Rt}{\Rd}{0 0000}{10 0000}
+	
+	\Efecto{
+		\pto $R_d \alloc [R_s] + [R_t]$
+		\pto \nop
+	}{add R$_d$, R$_s$, R$_t$}
+	
+	\subsection{Substract: \textbf{sub}}\ 
+	
+	\TipoR{00 0000}{\Rs}{\Rt}{\Rd}{0 0000}{10 0010}
+	
+	\Efecto{
+		\pto $R_d \alloc [R_s] - [R_t]$
+		\pto \nop
+	}{sub R$_d$, R$_s$, R$_t$}
+	
+	\subsection{Multiply: \textbf{mult}}\ 
+	
+	\TipoR{00 0000}{\Rs}{\Rt}{0 0000}{0 0000}{01 1000}
+	
+	\Efecto{
+		\pto $Hi\ ||\ Lo \alloc [R_s] * [R_t]$
+		\pto \nop
+	}{mult R$_s$, R$_t$}
+	
+	\subsection{Unsigned multiply: \textbf{mulu}}\ 
+	
+	Idéntica a la instrucción \texttt{mult} excepto:
+	\begin{itemize}
+		\item Func-code = 01 1001
+		\item El contenido de \Rs\ y \Rt\ se considera como enteros sin signo.
+	\end{itemize}
+	
+	\subsection{Divide: \textbf{div}}\ 
+	
+	\TipoR{00 0000}{\Rs}{\Rt}{0 0000}{0 0000}{01 1010}
+	
+	\Efecto{
+		\pto $Lo \alloc [R_s] / [R_t]$
+		\pto $Hi \alloc [R_s] mod [R_t]$
+		\pto \nop
+	}{div R$_s$, R$_t$}
+	
+	\subsection{Unsigned divide: \textbf{divu}}\ 
+	
+	Idéntica a la instrucción \texttt{div} excepto:
+	\begin{itemize}
+		\item Func-code = 01 1011
+		\item El contenido de \Rs\ y \Rt\ se considera como enteros sin signo.
+	\end{itemize}
+
+	\subsection{Addition inmediate: \textbf{addi}}\ 
+	
+	\TipoI{00 1000}{\Rs}{\Rt}{constante}
+	
+	\Efecto{
+		\pto $R_t \alloc [R_s] + ([I_{15}]^{16}\ ||\ [I_{15,...,0}])$
+		\pto \nop
+	}{addi R$_t$, R$_s$, constante}
+	
+	\medskip
+	Ejemplo: \texttt{addi $R_3$, $R_8$, 34}
+
+	\section{Instrucciones Lógicas}
+	
+	\subsection{Logical and: \textbf{and}}\ 
+	
+	\TipoR{00 0000}{\Rs}{\Rt}{\Rd}{0 0000}{10 0100}
+	
+	\Efecto{
+		\pto $R_d \alloc [R_s]\ and\ [R_t]$
+		\pto \nop
+	}{and R$_d$, R$_s$, R$_t$}
+	
+	\subsection{Logical or, nor, xor: \textbf{or, nor, xor}}\ 
+	
+	Idéntica a la instrucción \texttt{and} excepto:
+	\begin{itemize}
+		\item Func-code = 10 0101 para la instrucción \texttt{or},
+		\item Func-code = 10 0111 para la instrucción \texttt{nor},
+		\item Func-code = 10 1000 para la instrucción \texttt{xor}.
+	\end{itemize}
+
+	\subsection{Logical and immediate: \textbf{andi}}\ 
+	
+	\TipoI{00 1100}{\Rs}{\Rt}{constante}
+	
+	\Efecto{
+		\pto $R_t \alloc [R_s]\ and\ (0^{16}\ ||\ [I_{15,...,0}])$
+		\pto \nop
+	}{andi R$_t$, R$_s$, constante}
+	
+	\subsection{Logical or immediate \& xor immediate: \textbf{ori, xori}}\ 
+	
+	Idéntica a la instrucción \texttt{andi} excepto:
+	\begin{itemize}
+		\item Func-code = 00 1101 para la instrucción \texttt{ori}.
+		\item Func-code = 00 1110 para la instrucción \texttt{xori}.
+	\end{itemize}
+
+	\section{Instrucciones de Comparación}
+	
+	\subsection{Set less than: \textbf{slt}}\ 
+	
+	\TipoR{00 0000}{\Rs}{\Rt}{\Rd}{0 0000}{10 1010}
+	
+	\Efecto{
+		\pto \text{si} $[R_s] < [R_t]\ \text{entonces}\ R_d \alloc 0^{31}\ ||\ 1$
+		\pto \text{sino} $R_d \alloc 0^{32}$
+		\pto \nop
+	}{slt R$_d$, R$_s$, R$_t$}
+	
+	\subsection{Unsigned set less than: \textbf{sltu}}\ 
+	
+	Idéntica a la instrucción \texttt{slt} excepto:
+	\begin{itemize}
+		\item Func-code = 10 1011
+		\item El contenido de \Rs\ y \Rt\ se considera como enteros sin signo.
+	\end{itemize}
+	
+	\subsection{Set less than immediate: \textbf{slti}}\ 
+	
+	\TipoI{00 1010}{\Rs}{\Rt}{constante}
+	
+	\Efecto{
+		\pto \text{si} $[R_s] < ([I_{15}]^{16}\ ||\ [I_{15,...,0}])\  \text{entonces}\ R_t \alloc 0^{31}\ ||\ 1$
+		\pto \text{sino} $R_t \alloc 0^{32}$
+		\pto \nop
+	}{slti R$_t$, R$_s$, constante}
+	
+	\subsection{Set less than immediate unsigned: \textbf{sltiu}}\ 
+	
+	Idéntica a la instrucción \texttt{slti} excepto:
+	\begin{itemize}
+		\item Func-code = 00 1011.
+		\item El contenido de \Rs\ y \Rt\ se considera como enteros sin signo.
+	\end{itemize}
+
+	\section{Instrucciones de Copia de Registros}
+	
+	\subsection{Move from Hi: \textbf{mfhi}}\ 
+	
+	\TipoR{00 0000}{0 0000}{0 0000}{\Rd}{0 0000}{01 0000}
+	
+	\Efecto{
+		\pto $R_d \alloc [Hi]$
+		\pto \nop
+	}{mfhi R$_d$}
+	
+	\subsection{Move from Lo: \textbf{mflo}}\ 
+	
+	\TipoR{00 0000}{0 0000}{0 0000}{\Rd}{0 0000}{01 0010}
+	
+	\Efecto{
+		\pto $R_d \alloc [Lo]$
+		\pto \nop
+	}{mflo R$_d$}
+
+	\section{Instrucciones de Salto}
+	
+	\subsection{No operation: \textbf{nop}}\ 
+	
+	\TipoR{00 0000}{0 0000}{0 0000}{0 0000}{0 0000}{00 0000}
+	
+	\Efecto{
+		\pto \nop
+	}{nop}
+	
+	\subsection{Branch on equal: \textbf{beq}}\ 
+	
+	\TipoI{00 0100}{\Rs}{\Rt}{offset}
+	
+	\Efecto{
+		\pto \text{si} $[R_s] == [R_t]\ \text{entonces}\ PC \alloc [PC] + 4 + ([I_{15}]^{14}\ ||\ [I_{15,...,0}]\ ||\ 0^2)$,
+		
+		\qquad\qquad o sea, $PC \alloc [PC] + 4 + 4 * offset$
+		
+		\pto \text{sino} \nop
+	}{beq R$_s$, R$_t$, offset}
+	
+	\subsection{Branch on not equal: \textbf{bne}}\ 
+	
+	\TipoI{00 0101}{\Rs}{\Rt}{offset}
+	
+	\Efecto{
+		\pto \text{si} $[R_s] <> [R_t]\ \text{entonces}\ PC \alloc [PC] + 4 + ([I_{15}]^{14}\ ||\ [I_{15,...,0}]\ ||\ 0^2)$,
+		
+		\qquad\qquad o sea, $PC \alloc [PC] + 4 + 4 * offset$
+		
+		\pto \text{sino} \nop
+	}{bne R$_s$, R$_t$, offset}
+	
+	\subsection{Branch on less than or equal zero: \textbf{blez}}\ 
+	
+	\TipoI{00 0110}{\Rs}{\Rt}{offset}
+	
+	\Efecto{
+		\pto \text{si} $[R_s] \le 0\ \text{entonces}\ PC \alloc [PC] + 4 + ([I_{15}]^{14}\ ||\ [I_{15,...,0}]\ ||\ 0^2)$,
+		
+		\qquad\qquad o sea, $PC \alloc [PC] + 4 + 4 * offset$
+		
+		\pto \text{sino} \nop
+	}{blez R$_s$, offset}
+	
+	\subsection{Branch on greater than zero: \textbf{bgtz}}\ 
+	
+	\TipoI{00 0111}{\Rs}{\Rt}{offset}
+	
+	\Efecto{
+		\pto \text{si} $[R_s] > 0\ \text{entonces}\ PC \alloc [PC] + 4 + ([I_{15}]^{14}\ ||\ [I_{15,...,0}]\ ||\ 0^2)$,
+		
+		\qquad\qquad o sea, $PC \alloc [PC] + 4 + 4 * offset$
+		
+		\pto \text{sino} \nop
+	}{bgtz R$_s$, offset}
+	
+	\subsection{Branch on less than zero: \textbf{bltz}}\ 
+	
+	\TipoI{00 0001}{\Rs}{\Rt}{offset}
+	
+	\Efecto{
+		\pto \text{si} $[R_s] < 0\ \text{entonces}\ PC \alloc [PC] + 4 + ([I_{15}]^{14}\ ||\ [I_{15,...,0}]\ ||\ 0^2)$,
+		
+		\qquad\qquad o sea, $PC \alloc [PC] + 4 + 4 * offset$
+		
+		\pto \text{sino} \nop
+	}{bltz R$_s$, offset}
+	
+	\subsection{Jump: \textbf{j}}\ 
+	
+	\TipoJ{00 0010}{destino}
+	
+	\Efecto{
+		\pto $PC \alloc ([PC_{31,...,28}]\ ||\ [I_{25,...,0}]\ ||\ 0^2)$
+	}{j destino}
+	
+	\subsection{Jump register: \textbf{jr}}\ 
+	
+	\TipoR{00 0000}{\Rs}{0 0000}{0 0000}{0 0000}{00 1000}
+	
+	\Efecto{
+		\pto $PC \alloc [R_s]$
+	}{jr R$_s$}
+
+	\section{Instrucciones de Memoria}
+	
+	\subsection{Load word: \textbf{lw}}\ 
+	
+	\TipoI{10 0011}{\Rs}{\Rt}{offset}
+	
+	\Efecto{
+		\pto $R_t \alloc M\{[R_s] + ([I_{15}]^{16}\ ||\ [I_{15,...,0}])\}$
+		\pto \nop
+	}{lw R$_t$, offset(R$_s$)}
+	
+	\medskip
+	Ejemplo: \texttt{lw R$_3$, 16(R$_0$)}
+	
+	\subsection{Store word: \textbf{sw}}\ 
+	
+	\TipoI{10 1011}{\Rs}{\Rt}{offset}
+	
+	\Efecto{
+		\pto $M\{[R_s] + ([I_{15}]^{16}\ ||\ [I_{15,...,0}])\} \alloc [R_t]$
+		\pto \nop
+	}{sw R$_t$, offset(R$_s$)}
+	
+	\subsection{Pop from stack: \textbf{pop}}\ 
+	
+	\TipoR{11 1000}{0 0000}{0 0000}{\Rd}{0 0000}{00 0000}
+	
+	\Efecto{
+		\pto $R_d \alloc M\{[SP]\}$
+		\pto $SP \alloc [SP] + 4$
+		\pto \nop
+	}{pop R$_d$}
+	
+	\subsection{Push to stack: \textbf{push}}\ 
+	
+	\TipoR{11 1000}{\Rs}{0 0000}{0 0000}{0 0000}{00 0001}
+	
+	\Efecto{
+		\pto $SP \alloc [SP] - 4$
+		\pto $M\{[SP]\} \alloc R_s$
+		\pto \nop
+	}{push R$_s$}
+	
+	\section{Instrucciones especiales}
+	
+	Las siguientes instrucciones no son realistas, pero son necesarias para simular una entrada de teclado y una terminal sin complicar la interfaz de simulación.
+	
+	\subsection{Halt program: \textbf{halt}}\ 
+	
+	\TipoR{11 1111}{0 0000}{0 0000}{0 0000}{0 0000}{11 1111}
+	
+	\Efecto{
+		\pto Detiene la simulación del programa actual.
+	}{halt}
+
+	\subsection{Write to terminal: \textbf{tty}}\ 
+	
+	\TipoR{11 1111}{\Rs}{0 0000}{0 0000}{0 0000}{00 0001}
+	
+	\Efecto{
+		\pto Envía un caracter a la pantalla conectada al procesador (\texttt{TTY}). La pantalla es un circuito síncrono. Para enviar un caracter, se colocan los $7$ bits menos significativos de $R_s$ en la salida \texttt{TTY DATA} del procesador, se activa la salida \texttt{TTY ENABLE}, y en el próximo ciclo la pantalla mostrará el caracter \textit{ASCII} correspondiente a los $7$~bits de \texttt{TTY DATA}.
+	}{tty R$_s$}
+
+	\subsection{Set random: \textbf{rnd}}\ 
+	
+	\TipoR{11 1111}{0 0000}{0 0000}{\Rd}{0 0000}{00 0010}
+	
+	\Efecto{
+		\pto Almacena en $R_d$ un número aleatorio.
+	}{rnd R$_d$}
+
+	\subsection{Set key: \textbf{kbd}}\ 
+	
+	\TipoR{11 1111}{0 0000}{0 0000}{\Rd}{0 0000}{00 0100}
+	
+	\Efecto{
+		\pto Esta instrucción lee un caracter del teclado y lo almacena en $R_d$. La entrada \texttt{KBD AVAILABLE} del procesador indica si hay algún caracter esperando en el \textit{buffer} del teclado y la entrada \texttt{KBD DATA}, es un número de $7$ bits que corresponde al código \textit{ASCII} del caracter que está en la punta del \textit{buffer}. El \textit{buffer} del teclado funciona como una cola. Los caracteres se añaden a la cola cuando se teclea. En cada ciclo de reloj, si \texttt{KBD ENABLE} está activa, el teclado elimina el caracter que está en la punta de la cola. Si en el momento que esta instrucción se ejecuta, \texttt{KBD AVAILABLE} está desactivada, en $R_d$ se almacena el valor $-1$.
+	}{kbd R$_d$}
+
+
+	\section{Program Counter}
+	
+	El valor del registro \textit{Program Counter} ($PC$) representa la dirección de memoria de la próxima instrucción que se va a ejecutar. Como en S-MIPS las instrucciones ocupan $4$ bytes, cada vez que el procesador ejecuta una instrucción que no sea de salto el valor de PC aumenta en $4$. Las instrucciones de salto (\texttt{beq}, \texttt{bne}, \texttt{blez},...) suman su argumento (en complemento a 2) al de $PC$. El argumento indica el número de instrucciones a saltarse, por tanto, es necesario multiplicar el argumento por $4$ antes de sumarlo al \textit{Program Counter}. Como resultado de esto, si un programa quisiera saltarse una instrucción, debe hacer un salto con argumento $1$:
+	
+	\begin{itemize}
+		\ttfamily
+		\pto add R$_3$, R$_0$, 46
+		\pto add R$_4$, R$_0$, 46
+		\pto beq R$_3$, R$_4$, 1
+		\pto halt
+	\end{itemize}
+
+	En este ejemplo la instrucción \texttt{halt} siempre se salta. Otro resultado de este comportamiento es que ``\texttt{beq R$_0$, R$_0$, 0}'' es lo mismo que \texttt{nop}, y ``\texttt{beq R$_0$, R$_0$, -1}'' es un ciclo infinito.
+	
+	\section{Acceso a memoria}
+	
+	Las instrucciones de lectura y escritura en la \textit{RAM} cuentan con $32$~bits para direccionar la memoria. Sin embargo, la memoria para el programador de S-MIPS, es un \textit{array} plano de $1$~MB~=~$2^{20}$~bytes, direccionable a nivel de $1$~byte, por lo que solo se usarán los 20 primeros bits para el direccionamiento. Además las transferencias entre la \textit{RAM} y el procesador ocurren siempre en bloques de $16$~bytes ($65536$ bloques).\\
+	
+	Por simplicidad para este proyecto académico, cada bloque de la \textit{RAM} cuenta con $4$ palabras de $4$~bytes, por lo que solo se podrá direccionar a nivel de $4$ bytes. Sin embargo, se desea respetar el indizado original (de $1$~byte) de S-MIPS. Para ello, el procesador debe ignorar cualquier dirección de memoria que no sea divisible entre $4$, e interpretarla como si fuera el número divisible por $4$ más cercano por debajo. Por ejemplo, las instrucciones:
+	\begin{itemize}
+		\ttfamily
+		\item lw R$_3$, 0(R$_0$)\textrm{,}
+		\item lw R$_3$, 1(R$_0$)\textrm{,}
+		\item lw R$_3$, 2(R$_0$)\textrm{,}
+		\item lw R$_3$, 3(R$_0$)\textrm{,}
+	\end{itemize}
+	hacen lo mismo: copiarán los bytes $0$, $1$, $2$ y $3$ de la \textit{RAM} al registro \texttt{R$_3$}. En el caso de:
+	\begin{itemize}
+		\pto \texttt{sw R$_3$, 0(R$_0$)}\textrm{,}
+	\end{itemize}
+	se copiará a los bytes $0$, $1$, $2$ y $3$ de la \textit{RAM} el valor guardado en el registro \texttt{R$_3$}.\\
+	
+	S-MIPS es una arquitectura \textit{Little-Endian}, lo que significa que, en cada palabra de $32$~bits, el byte con dirección más pequeña es el menos significativo y el de dirección más grande es el más significativo. Esto luce \textit{``al revés''} de cómo se escriben normalmente los números. Supongamos que los primeros bytes de la \textit{RAM} tienen estos valores:
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.3\linewidth]{img/acceso_memoria_1}
+		\label{fig:accesomemoria1}
+	\end{figure}
+
+	Al hacer ``\texttt{lw R$_3$, 0(R$_0$)}'', el byte $0$ de la \textit{RAM}, que tiene el valor 1 (\texttt{0000 0001}$_2$) va hacia la parte menos significativa de \texttt{R$_3$} y el byte $3$, con valor $0$ (\texttt{0000 0000}$_2$), va hacia la más significativa. El valor final de \texttt{R$_3$} sería:
+	$$\texttt{0000 0000 0000 0000 0000 0010 0000 0001}_2 = 512_{10} + 1_{10} = 513_{10}.$$
+	
+	Las escrituras se comportan de igual forma. Si se hace:
+	\begin{itemize}
+		\ttfamily
+		\pto add R$_3$, R$_0$, 1027
+		\pto sw R$_3$, 0(R$_0$)
+	\end{itemize}
+	se escribirán para el byte $0$ de la \textit{RAM} la parte menos significativa del valor $1027$ y para el byte $3$ la parte más significativa. Como $1027$ tiene la siguiente representación binaria:
+	$$1027_{10} = 1024_{10} + 2_{10} + 1_{10} = \texttt{0000 0000 0000 0000 0000 0100 0000 0011}_2\textrm{,}$$
+	su byte menos significativo contiene \texttt{0000 0011}$_2 = 3_{10}$, y su byte más significativo contiene \texttt{0000 0000}$_2 = 0_{10}$, quedando en la \textit{RAM}:
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.3\linewidth]{img/acceso_memoria_2}
+		\label{fig:accesomemoria2}
+	\end{figure}
+	
+	\section{Interfaz con la memoria}
+	
+	El módulo \textit{RAM} del circuito \textit{S-MIPS Board} implementa una memoria asíncrona de $1$~MB. Esta memoria está organizada en $2^{16} = 65536$ bloques de $16$~bytes. Esta \textit{RAM} es más lenta que el procesador, y le toma varios ciclos leer y escribir datos. La cantidad de ciclos que toma hacer una lectura o una escritura están en las salidas \RT\ (\ReadTime) y \WT\ (\WriteTime). Estos valores no cambian una vez comienza la ejecución del procesador.\\
+	
+	Aunque estas salidas sean constantes, no se deben usar sus valores \textit{``a mano''} dentro del \textit{CPU}. Hay que obtenerlos de la RAM. Los profesores vamos a probar distintas combinaciones de esos valores durante la verificación del procesador y este debe comportarse en concordancia.\\
+	
+	La entrada \ADDR\ ($16$~bits) indica el bloque de la \textit{RAM} que se quiere indizar.  La entrada \CS\ (\ChipSelect) indica si se va a utilizar la \textit{RAM} (\CS\ = $1$), o no (\CS\ = $0$). La entrada \texttt{¬R/W} indica, en el caso de que \CS\ = $1$, si se leerá de la \textit{RAM} (\texttt{¬R/W} = $0$), o si se escribirá en la RAM (\texttt{¬R/W} = $1$). Cuando \CS\ = $0$, se ignora el valor de \texttt{¬R/W}.\\
+	
+	En el momento que se desee acceder a la RAM, se debe activar \CS\ y especificar el tipo de operación con \texttt{¬R/W}, manteniendo persistentes estos valores durante \RT\ o \WT\ ciclos de la CPU (si se lee o se escribe respectivamente). Cuando se finaliza una lectura se proporcionan los $16$~bytes del bloque seleccionado, a través las 4 salidas de $32$~bits \texttt{O}$_0$, \texttt{O}$_1$, \texttt{O}$_2$, y \texttt{O}$_3$. Análogamente, cuando se va a realizar una escritura se deben enviar los valores por las entradas de $32$~bits \texttt{I}$_0$, \texttt{I}$_1$, \texttt{I}$_2$, e \texttt{I}$_3$. Sin embargo, la escritura puede hacerse parcialmente, usando la entrada \MASK.\\
+
+	La \textit{RAM} está dividida en 4 bancos que actúan como columnas o \textit{slices}. Cada bloque de $16$~bytes de la \textit{RAM} está dividido en $4$ palabras de $4$~bytes ($32$~bits). Los primeros $64$~bytes de la \textit{RAM} lucen así:
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\linewidth]{img/interfaz}
+		\label{fig:interfaz}
+	\end{figure}
+
+	La entrada \MASK\ es una entrada de $4$ bits que selecciona cuál o cuáles bancos van a ser modificados por una operación de escritura. El bit menos significativo de \MASK\ selecciona el Banco 0, el más significativo selecciona el Banco 3. Por ejemplo, si la entrada \MASK\ tiene el valor $8_{10}$ (\texttt{1000}$_2$) y la entrada \ADDR\ es $0$, la escritura solo afectaría los bytes $12$, $13$, $14$ y $15$ de la \textit{RAM}, pues estos están en el bloque $0$ y en el banco $3$. En esos $4$ bytes se escribiría el valor de la entrada \texttt{I}$_3$ (\texttt{Data Input 3}). Si la entrada \MASK\ fuera $12_{10}$ (\texttt{1100}$_2$) y \ADDR\ fuera $2$, la escritura modificaría los bytes $40, 41, 42, 43$ y $44, 45, 46, 47$ (bloque 2, bancos 2 y 3). En esos 16 bytes se escribirían los valores de las entradas \texttt{I}$_2$ e \texttt{I}$_3$.\\
+	
+	La entrada \MASK\ no afecta las operaciones de lectura. Las salidas \texttt{O}$_0$, \texttt{O}$_1$, \texttt{O}$_2$, y \texttt{O}$_3$ siempre contienen el bloque completo solicitado en \ADDR. Las escrituras se realizan cuando \CS\ es 1 y \texttt{¬R/W} es 1 y toman la cantidad de ciclos de \textit{CPU} que indica la salida \WT.
+	
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{  | c | c | c | c | }
+
+\hline
+No. & Instrucción & Código de máquina & Tipo\\ \hline
+
+& & & \\
+1 & add & 00  0000  Rs  Rt  Rd  0 0000 10 0000 & \\
+2 & sub & 00  0000  Rs  Rt  Rd 0 0000 10 0010  &\\
+3 & mult & 00  0000  Rs  Rt  0 0000 0 0000 01 1000 &\\
+4 & mulu & 00  0000  Rs  Rt  0 0000 0 0000 01 1001 & Aritméticas\\
+5 & div &	 00  0000  Rs  Rt  0 0000 0 0000 01 1010 &\\
+6 & divu & 00  0000  Rs  Rt  0 0000 0 0000 01 1011 &\\
+7 & addi & 00 1000  Rs  Rt  constante &\\ \hline
+
+&& &\\
+8 & and &			 	00 0000  Rs  Rt  Rd 0 0000 10 0100 &\\
+9 & or &				00 0000  Rs  Rt  Rd 0 0000 10 0101 &\\
+10 & nor &				00 0000  Rs  Rt  Rd 0 0000 10 0111 &\\
+11 & xor &				00 0000  Rs  Rt  Rd 0 0000 10 1000 & Lógicas\\
+12 & andi &			 00 1100  Rs   Rt constante &\\
+13 & ori &				 00 1101  Rs   Rt constante &\\
+14 & xori &				 00 1110  Rs  Rt constante &\\ \hline
+
+&& & \\
+15 & slt &				 00 0000  Rs  Rt  Rd 0 0000 10 1010 &\\
+16 & sltu &				 00 0000  Rs  Rt  Rd 0 0000 10 1011 & De comparación\\
+17 & slti &				 00 1010  Rs  Rt  constante &\\
+18 & sltiu &				 00 1011  Rs Rt constante &\\ \hline
+
+&&\\
+19 & mfhi &			 00 0000 0 0000 0 0000 Rd 0 0000 01 0000 & De copia\\
+20 & mflo &			 00 0000 0 0000 0 0000 Rd 0 0000 01 0000 &\\ \hline
+
+&& &\\
+21 & nop &				 00 0000 0 0000 0 0000 0 0000 0 0000 00 0000 &\\ 
+22 &beq &			 	00 0100 Rs Rt offset &\\
+23 & bne	&			 00 0101 Rs Rt offset &\\
+24 & blez	&			 00 0110 Rs Rt offset & De salto\\
+25 & bgtz	&			 00 0111 Rs Rt offset &\\
+26 & bltz	&			 00 0001 Rs Rt offset &\\
+27 &j		&			 00 0010 destino &\\
+28 & jr	&			00 0000 Rs 0 0000 0 0000 0 0000 00 1000 &\\ \hline
+
+&& &\\
+29 &lw&				 10 0011 Rs Rt offset &\\
+30 &sw&				10 1011 Rs Rt offset & De memoria\\
+31 &pop&				11 1000 0 0000 0 0000 Rd 0 0000 00 0000 &\\
+32 &push&				11 1000 Rs 0 0000 0 0000 0 0000 00 0001 &\\ \hline
+
+&& &\\
+33& halt &				11 1111 0 0000 0 0000 0 0000 0 0000 11 1111 &\\
+34& tty&			           11 1111 Rs 0 0000 0 0000 0 0000 00 0001 & Epeciales\\
+35& rnd&				11 1111 0 0000 0 0000 Rd 0 0000 00 0010 &\\
+36&  kbd&				11 1111 0 0000 0 0000 Rd 0 0000 00 0010 &\\ \hline
+
+\end{tabular} 
+\caption{Instrucciones S-MIPS}
+\end{center}
+\end{table} 
+	
+	\bigskip\bigskip
+	
+	
+	
+\end{document} 
