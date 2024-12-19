@@ -101,7 +101,7 @@
 	
 	\HRule\\[1.4cm]
 	%\MSdoublespacing
-	{ \huge \bfseries Procesador en S-MIPS}\\\vspace{0.2cm}
+	{ \huge \bfseries Procesador en la arquitectura S-MIPS}\\\vspace{0.2cm}
 	{ \large Proyecto Final}\\\vspace{0.3cm} % Falls nicht benötigt, einfach auskommentieren
 	\HRule
 	\vspace{1cm}
@@ -580,6 +580,11 @@
 	
 	La entrada \MASK\ no afecta las operaciones de lectura. Las salidas \texttt{O}$_0$, \texttt{O}$_1$, \texttt{O}$_2$, y \texttt{O}$_3$ siempre contienen el bloque completo solicitado en \ADDR. Las escrituras se realizan cuando \CS\ es 1 y \texttt{¬R/W} es 1 y toman la cantidad de ciclos de \textit{CPU} que indica la salida \WT.
 	
+
+\section{Resumen de las instrucciones de la arquitectura S-MIPS}
+
+	En la siguiente tabla se resumen todas las instrucciones que se deberán implementar en el proyecto. Organizadas según el tipo, con su definición en el lenguaje ensamblador S-MIPS y con la respectiva codificación a lenguaje de máquina.
+
 \begin{table}[t]
 \begin{center}
 \begin{tabular}{  | c | c | c | c | }
@@ -638,6 +643,7 @@ No. & Instrucción & Código de máquina & Tipo\\ \hline
 36&  kbd&				11 1111 0 0000 0 0000 Rd 0 0000 00 0010 &\\ \hline
 
 \end{tabular} 
+
 \caption{Instrucciones S-MIPS}
 \end{center}
 \end{table} 
