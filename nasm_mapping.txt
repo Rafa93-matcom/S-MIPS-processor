@@ -1,0 +1,62 @@
+keywords,36:
+add
+sub
+**inc
+**dec
+**cmp
+mul
+imul, mulu
+div
+idiv, divu
+addi
+and
+or
+nor
+xor
+andi
+ori
+xori
+slt
+sltu
+slti
+sltiu
+mfhi
+mflo
+nop
+beq
+bne
+blez
+bgtz
+bltz
+j
+jr
+lw
+sw
+pop
+push
+halt
+tty
+rnd
+kbd
+
+registers,13:
+eax
+ebx
+ecx
+edx
+ebp
+esp
+eip
+edi
+esi
+cs
+ds
+ss
+eflag
+
+* left new instruccion, rigth, old instruction
+
+** nuevas agregadas a través de las conferencias de ensamblador
+
+los operadores pueden ser registros...
+
